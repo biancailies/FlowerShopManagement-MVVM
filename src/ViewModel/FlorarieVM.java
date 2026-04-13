@@ -6,9 +6,19 @@ import Model.Repository.FloareRepository;
 import Model.Repository.FlorarieRepository;
 import Model.Repository.StocRepository;
 import Model.Stoc;
-import ViewModel.Commands.FlorarieCommands;
+import ViewModel.Commands.RelayCommand;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
-import javax.swing.table.DefaultTableModel;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.image.Image;
+
+import java.io.File;
+import java.net.URL;
+
 import java.util.List;
 
 public class FlorarieVM {
@@ -17,280 +27,92 @@ public class FlorarieVM {
     private final StocRepository stocRepository;
     private final FloareRepository floareRepository;
 
-    private Florarie currentFlorarie;
-    private Floare currentFloare;
-    private Stoc currentStoc;
-
     private Florarie selectedFlorarie;
     private Floare selectedFloare;
     private Stoc selectedStoc;
 
-    private String message;
-    private String search;
-    private String filterColor;
+    private final StringProperty message = new SimpleStringProperty("Ready");
 
-    private String florarieId;
-    private String florarieDenumire;
-    private String florarieAdresa;
+    private final StringProperty search = new SimpleStringProperty("");
+    private final StringProperty filterColor = new SimpleStringProperty("");
 
-    private String floareId;
-    private String floareDenumire;
-    private String floareImagine;
+    private final StringProperty florarieId = new SimpleStringProperty("");
+    private final StringProperty florarieDenumire = new SimpleStringProperty("");
+    private final StringProperty florarieAdresa = new SimpleStringProperty("");
 
-    private String stocId;
-    private String stocIdFlorarie;
-    private String stocIdFloare;
-    private String stocCuloare;
-    private String stocCantitate;
+    private final StringProperty floareId = new SimpleStringProperty("");
+    private final StringProperty floareDenumire = new SimpleStringProperty("");
+    private final StringProperty floareImagine = new SimpleStringProperty("");
 
-    private final DefaultTableModel florariiTableModel;
-    private final DefaultTableModel floriTableModel;
-    private final DefaultTableModel stocuriTableModel;
+    private final StringProperty stocId = new SimpleStringProperty("");
+    private final StringProperty stocIdFlorarie = new SimpleStringProperty("");
+    private final StringProperty stocIdFloare = new SimpleStringProperty("");
+    private final StringProperty stocCuloare = new SimpleStringProperty("");
+    private final StringProperty stocCantitate = new SimpleStringProperty("");
 
-    private final FlorarieCommands addFloareCommand;
-    private final FlorarieCommands updateFloareCommand;
-    private final FlorarieCommands deleteFloareCommand;
+    private final StringProperty selectedFlorarieCombo = new SimpleStringProperty("");
 
-    private final FlorarieCommands addFlorarieCommand;
-    private final FlorarieCommands updateFlorarieCommand;
-    private final FlorarieCommands deleteFlorarieCommand;
+    private final ObservableList<List<String>> florarii = FXCollections.observableArrayList();
+    private final ObservableList<List<String>> flori = FXCollections.observableArrayList();
+    private final ObservableList<List<String>> stocuri = FXCollections.observableArrayList();
 
-    private final FlorarieCommands addStocCommand;
-    private final FlorarieCommands updateStocCommand;
-    private final FlorarieCommands deleteStocCommand;
+    private final ObservableList<List<String>> floriPreview = FXCollections.observableArrayList();
+    private final ObservableList<List<String>> stocuriPreview = FXCollections.observableArrayList();
 
-    private final FlorarieCommands searchFloareCommand;
-    private final FlorarieCommands filterColorCommand;
-    private final FlorarieCommands filterDispCommand;
+    private final ObservableList<String> florariiCombo = FXCollections.observableArrayList();
+
+    private final RelayCommand addFlorarieCommand;
+    private final RelayCommand updateFlorarieCommand;
+    private final RelayCommand deleteFlorarieCommand;
+
+    private final RelayCommand addFloareCommand;
+    private final RelayCommand updateFloareCommand;
+    private final RelayCommand deleteFloareCommand;
+
+    private final RelayCommand addStocCommand;
+    private final RelayCommand updateStocCommand;
+    private final RelayCommand deleteStocCommand;
+
+    private final RelayCommand searchFloareCommand;
+    private final RelayCommand filterColorCommand;
+    private final RelayCommand filterDispCommand;
+    private final RelayCommand refreshCommand;
+
+    private final ObjectProperty<Image> floarePreviewImage = new SimpleObjectProperty<>(null);
+    private final StringProperty floarePreviewText = new SimpleStringProperty("Preview imagine");
 
     public FlorarieVM() {
         florarieRepository = new FlorarieRepository();
         stocRepository = new StocRepository();
         floareRepository = new FloareRepository();
 
-        currentFlorarie = new Florarie();
-        currentFloare = new Floare();
-        currentStoc = new Stoc();
+        addFlorarieCommand = new RelayCommand(this::addFlorarie);
+        updateFlorarieCommand = new RelayCommand(this::updateFlorarie);
+        deleteFlorarieCommand = new RelayCommand(this::deleteFlorarie);
 
-        selectedFlorarie = null;
-        selectedFloare = null;
-        selectedStoc = null;
+        addFloareCommand = new RelayCommand(this::addFloare);
+        updateFloareCommand = new RelayCommand(this::updateFloare);
+        deleteFloareCommand = new RelayCommand(this::deleteFloare);
 
-        message = "Ready";
-        search = "";
-        filterColor = "";
+        addStocCommand = new RelayCommand(this::addStoc);
+        updateStocCommand = new RelayCommand(this::updateStoc);
+        deleteStocCommand = new RelayCommand(this::deleteStoc);
 
-        florarieId = "";
-        florarieDenumire = "";
-        florarieAdresa = "";
+        searchFloareCommand = new RelayCommand(this::searchFloare);
+        filterColorCommand = new RelayCommand(this::filterFloriCuloare);
+        filterDispCommand = new RelayCommand(this::filterFloriDisp);
+        refreshCommand = new RelayCommand(this::refreshAll);
 
-        floareId = "";
-        floareDenumire = "";
-        floareImagine = "";
-
-        stocId = "";
-        stocIdFlorarie = "";
-        stocIdFloare = "";
-        stocCuloare = "";
-        stocCantitate = "";
-
-        florariiTableModel = new DefaultTableModel(new Object[]{"ID", "Denumire", "Adresa"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        floriTableModel = new DefaultTableModel(new Object[]{"ID", "Denumire", "Imagine"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        stocuriTableModel = new DefaultTableModel(new Object[]{"ID Stoc", "ID Florarie", "ID Floare", "Culoare", "Stoc"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        addFloareCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.ADD_FLOARE);
-        updateFloareCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.UPDATE_FLOARE);
-        deleteFloareCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.DELETE_FLOARE);
-
-        addFlorarieCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.ADD_FLORARIE);
-        updateFlorarieCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.UPDATE_FLORARIE);
-        deleteFlorarieCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.DELETE_FLORARIE);
-
-        addStocCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.ADD_STOC);
-        updateStocCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.UPDATE_STOC);
-        deleteStocCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.DELETE_STOC);
-
-        searchFloareCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.SEARCH_DENUMIRE);
-        filterColorCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.FILTER_COLOR);
-        filterDispCommand = new FlorarieCommands(this, FlorarieCommands.CommandType.FILTER_DISP);
+        floareImagine.addListener((obs, oldVal, newVal) -> updatePreviewImage(newVal));
 
         refreshAll();
-    }
-
-    public FlorarieCommands getAddFloareCommand() {
-        return addFloareCommand;
-    }
-
-    public FlorarieCommands getUpdateFloareCommand() {
-        return updateFloareCommand;
-    }
-
-    public FlorarieCommands getDeleteFloareCommand() {
-        return deleteFloareCommand;
-    }
-
-    public FlorarieCommands getAddFlorarieCommand() {
-        return addFlorarieCommand;
-    }
-
-    public FlorarieCommands getUpdateFlorarieCommand() {
-        return updateFlorarieCommand;
-    }
-
-    public FlorarieCommands getDeleteFlorarieCommand() {
-        return deleteFlorarieCommand;
-    }
-
-    public FlorarieCommands getAddStocCommand() {
-        return addStocCommand;
-    }
-
-    public FlorarieCommands getUpdateStocCommand() {
-        return updateStocCommand;
-    }
-
-    public FlorarieCommands getDeleteStocCommand() {
-        return deleteStocCommand;
-    }
-
-    public FlorarieCommands getSearchFloareCommand() {
-        return searchFloareCommand;
-    }
-
-    public FlorarieCommands getFilterColorCommand() {
-        return filterColorCommand;
-    }
-
-    public FlorarieCommands getFilterDispCommand() {
-        return filterDispCommand;
-    }
-
-    public DefaultTableModel getFlorariiTableModel() {
-        return florariiTableModel;
-    }
-
-    public DefaultTableModel getFloriTableModel() {
-        return floriTableModel;
-    }
-
-    public DefaultTableModel getStocuriTableModel() {
-        return stocuriTableModel;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getSearch() {
-        return search;
-    }
-
-    public void setSearch(String search) {
-        this.search = safe(search);
-    }
-
-    public String getFilterColor() {
-        return filterColor;
-    }
-
-    public void setFilterColor(String filterColor) {
-        this.filterColor = safe(filterColor);
-    }
-
-    public String getFlorarieId() {
-        return florarieId;
-    }
-
-    public String getFlorarieDenumire() {
-        return florarieDenumire;
-    }
-    public void setFlorarieDenumire(String florarieDenumire) {
-        this.florarieDenumire = safe(florarieDenumire);
-    }
-
-    public String getFlorarieAdresa() {
-        return florarieAdresa;
-    }
-
-    public void setFlorarieAdresa(String florarieAdresa) {
-        this.florarieAdresa = safe(florarieAdresa);
-    }
-
-    public String getFloareId() {
-        return floareId;
-    }
-
-    public String getFloareDenumire() {
-        return floareDenumire;
-    }
-    public void setFloareDenumire(String floareDenumire) {
-        this.floareDenumire = safe(floareDenumire);
-    }
-
-    public String getFloareImagine() {
-        return floareImagine;
-    }
-    public void setFloareImagine(String floareImagine) {
-        this.floareImagine = safe(floareImagine);
-    }
-
-    public String getStocId() {
-        return stocId;
-    }
-
-    public String getStocIdFlorarie() {
-        return stocIdFlorarie;
-    }
-
-    public void setStocIdFlorarie(String stocIdFlorarie) {
-        this.stocIdFlorarie = safe(stocIdFlorarie);
-    }
-
-    public String getStocIdFloare() {
-        return stocIdFloare;
-    }
-
-    public void setStocIdFloare(String stocIdFloare) {
-        this.stocIdFloare = safe(stocIdFloare);
-    }
-
-    public String getStocCuloare() {
-        return stocCuloare;
-    }
-
-    public void setStocCuloare(String stocCuloare) {
-        this.stocCuloare = safe(stocCuloare);
-    }
-
-    public String getStocCantitate() {
-        return stocCantitate;
-    }
-
-    public void setStocCantitate(String stocCantitate) {
-        this.stocCantitate = safe(stocCantitate);
     }
 
     public void refreshAll() {
         loadFlorarii();
         loadFlori();
         loadStocuri();
+        loadFlorariiCombo();
 
         selectedFlorarie = null;
         selectedFloare = null;
@@ -300,140 +122,169 @@ public class FlorarieVM {
         clearFloareFields();
         clearStocFields();
 
-        search = "";
-        filterColor = "";
-        message = "Datele au fost actualizate.";
+        search.set("");
+        filterColor.set("");
+        selectedFlorarieCombo.set("");
+        message.set("Datele au fost actualizate.");
     }
 
     public void selectFlorarieAt(int row) {
-        if (row < 0 || row >= florariiTableModel.getRowCount()) {
+        if (row < 0 || row >= florarii.size()) {
             return;
         }
 
-        selectedFlorarie = new Florarie();
-        selectedFlorarie.setIdFlorarie((Integer) florariiTableModel.getValueAt(row, 0));
-        selectedFlorarie.setDenumire(String.valueOf(florariiTableModel.getValueAt(row, 1)));
-        selectedFlorarie.setAdresa(String.valueOf(florariiTableModel.getValueAt(row, 2)));
+        List<String> data = florarii.get(row);
 
-        florarieId = String.valueOf(selectedFlorarie.getIdFlorarie());
-        florarieDenumire = selectedFlorarie.getDenumire();
-        florarieAdresa = selectedFlorarie.getAdresa();
+        selectedFlorarie = new Florarie();
+        selectedFlorarie.setIdFlorarie(parseInt(data.get(0)));
+        selectedFlorarie.setDenumire(data.get(1));
+        selectedFlorarie.setAdresa(data.get(2));
+
+        florarieId.set(data.get(0));
+        florarieDenumire.set(data.get(1));
+        florarieAdresa.set(data.get(2));
     }
 
     public void selectFloareAt(int row) {
-        if (row < 0 || row >= floriTableModel.getRowCount()) {
+        if (row < 0 || row >= flori.size()) {
             return;
         }
 
-        selectedFloare = new Floare();
-        selectedFloare.setIdFloare((Integer) floriTableModel.getValueAt(row, 0));
-        selectedFloare.setDenumire(String.valueOf(floriTableModel.getValueAt(row, 1)));
-        selectedFloare.setImagine(String.valueOf(floriTableModel.getValueAt(row, 2)));
+        List<String> data = flori.get(row);
 
-        floareId = String.valueOf(selectedFloare.getIdFloare());
-        floareDenumire = selectedFloare.getDenumire();
-        floareImagine = selectedFloare.getImagine();
+        selectedFloare = new Floare();
+        selectedFloare.setIdFloare(parseInt(data.get(0)));
+        selectedFloare.setDenumire(data.get(1));
+        selectedFloare.setImagine(data.get(2));
+
+        floareId.set(data.get(0));
+        floareDenumire.set(data.get(1));
+        floareImagine.set(data.get(2));
     }
 
     public void selectStocAt(int row) {
-        if (row < 0 || row >= stocuriTableModel.getRowCount()) {
+        if (row < 0 || row >= stocuri.size()) {
             return;
         }
 
-        selectedStoc = new Stoc();
-        selectedStoc.setIdStoc((Integer) stocuriTableModel.getValueAt(row, 0));
-        selectedStoc.setIdFlorarie((Integer) stocuriTableModel.getValueAt(row, 1));
-        selectedStoc.setIdFloare((Integer) stocuriTableModel.getValueAt(row, 2));
-        selectedStoc.setCuloare(String.valueOf(stocuriTableModel.getValueAt(row, 3)));
-        selectedStoc.setStoc((Integer) stocuriTableModel.getValueAt(row, 4));
+        List<String> data = stocuri.get(row);
 
-        stocId = String.valueOf(selectedStoc.getIdStoc());
-        stocIdFlorarie = String.valueOf(selectedStoc.getIdFlorarie());
-        stocIdFloare = String.valueOf(selectedStoc.getIdFloare());
-        stocCuloare = selectedStoc.getCuloare();
-        stocCantitate = String.valueOf(selectedStoc.getStoc());
+        selectedStoc = new Stoc();
+        selectedStoc.setIdStoc(parseInt(data.get(0)));
+        selectedStoc.setIdFlorarie(parseInt(data.get(1)));
+        selectedStoc.setIdFloare(parseInt(data.get(2)));
+        selectedStoc.setCuloare(data.get(3));
+        selectedStoc.setStoc(parseInt(data.get(4)));
+
+        stocId.set(data.get(0));
+        stocIdFlorarie.set(data.get(1));
+        stocIdFloare.set(data.get(2));
+        stocCuloare.set(data.get(3));
+        stocCantitate.set(data.get(4));
+    }
+
+    public void selectFlorarieByComboValue(String value) {
+        if (value == null || value.isBlank()) {
+            selectedFlorarie = null;
+            return;
+        }
+
+        List<Florarie> list = florarieRepository.getFlorarii();
+        for (Florarie f : list) {
+            String comboValue = f.getIdFlorarie() + " - " + f.getDenumire();
+            if (comboValue.equals(value)) {
+                selectedFlorarie = f;
+                florarieId.set(String.valueOf(f.getIdFlorarie()));
+                florarieDenumire.set(f.getDenumire());
+                florarieAdresa.set(f.getAdresa());
+                break;
+            }
+        }
     }
 
     public void addFlorarie() {
-        if (florarieDenumire.isBlank() || florarieAdresa.isBlank()) {
-            message = "Completeaza denumirea si adresa florariei.";
+        if (florarieDenumire.get().isBlank() || florarieAdresa.get().isBlank()) {
+            message.set("Completeaza denumirea si adresa florariei.");
             return;
         }
 
-        currentFlorarie = new Florarie();
-        currentFlorarie.setDenumire(florarieDenumire);
-        currentFlorarie.setAdresa(florarieAdresa);
+        Florarie florarie = new Florarie();
+        florarie.setDenumire(florarieDenumire.get());
+        florarie.setAdresa(florarieAdresa.get());
 
-        florarieRepository.addFlorarie(currentFlorarie);
+        florarieRepository.addFlorarie(florarie);
         loadFlorarii();
+        loadFlorariiCombo();
         clearFlorarieFields();
         selectedFlorarie = null;
-        message = "Florarie adaugata cu succes.";
+        message.set("Florarie adaugata cu succes.");
     }
 
     public void updateFlorarie() {
         if (selectedFlorarie == null) {
-            message = "Selecteaza o florarie pentru actualizare.";
+            message.set("Selecteaza o florarie pentru actualizare.");
             return;
         }
 
-        selectedFlorarie.setDenumire(florarieDenumire);
-        selectedFlorarie.setAdresa(florarieAdresa);
+        selectedFlorarie.setDenumire(florarieDenumire.get());
+        selectedFlorarie.setAdresa(florarieAdresa.get());
 
         florarieRepository.updateFlorarie(selectedFlorarie);
         loadFlorarii();
-        florarieId = String.valueOf(selectedFlorarie.getIdFlorarie());
-        message = "Florarie actualizata cu succes.";
+        loadFlorariiCombo();
+        florarieId.set(String.valueOf(selectedFlorarie.getIdFlorarie()));
+        message.set("Florarie actualizata cu succes.");
     }
 
     public void deleteFlorarie() {
         if (selectedFlorarie == null) {
-            message = "Selecteaza o florarie pentru stergere.";
+            message.set("Selecteaza o florarie pentru stergere.");
             return;
         }
 
         florarieRepository.deleteFlorarie(selectedFlorarie.getIdFlorarie());
         loadFlorarii();
+        loadFlorariiCombo();
         clearFlorarieFields();
         selectedFlorarie = null;
-        message = "Florarie stearsa cu succes.";
+        message.set("Florarie stearsa cu succes.");
     }
 
     public void addFloare() {
-        if (floareDenumire.isBlank() || floareImagine.isBlank()) {
-            message = "Completeaza denumirea si calea imaginii pentru floare.";
+        if (floareDenumire.get().isBlank() || floareImagine.get().isBlank()) {
+            message.set("Completeaza denumirea si calea imaginii pentru floare.");
             return;
         }
 
-        currentFloare = new Floare();
-        currentFloare.setDenumire(floareDenumire);
-        currentFloare.setImagine(floareImagine);
+        Floare floare = new Floare();
+        floare.setDenumire(floareDenumire.get());
+        floare.setImagine(floareImagine.get());
 
-        floareRepository.addFloare(currentFloare);
+        floareRepository.addFloare(floare);
         loadFlori();
         clearFloareFields();
         selectedFloare = null;
-        message = "Floare adaugata cu succes.";
+        message.set("Floare adaugata cu succes.");
     }
 
     public void updateFloare() {
         if (selectedFloare == null) {
-            message = "Selecteaza o floare pentru actualizare.";
+            message.set("Selecteaza o floare pentru actualizare.");
             return;
         }
 
-        selectedFloare.setDenumire(floareDenumire);
-        selectedFloare.setImagine(floareImagine);
+        selectedFloare.setDenumire(floareDenumire.get());
+        selectedFloare.setImagine(floareImagine.get());
 
         floareRepository.updateFloare(selectedFloare);
         loadFlori();
-        floareId = String.valueOf(selectedFloare.getIdFloare());
-        message = "Floare actualizata cu succes.";
+        floareId.set(String.valueOf(selectedFloare.getIdFloare()));
+        message.set("Floare actualizata cu succes.");
     }
 
     public void deleteFloare() {
         if (selectedFloare == null) {
-            message = "Selecteaza o floare pentru stergere.";
+            message.set("Selecteaza o floare pentru stergere.");
             return;
         }
 
@@ -441,48 +292,49 @@ public class FlorarieVM {
         loadFlori();
         clearFloareFields();
         selectedFloare = null;
-        message = "Floare stearsa cu succes.";
+        message.set("Floare stearsa cu succes.");
     }
 
     public void addStoc() {
-        if (stocIdFlorarie.isBlank() || stocIdFloare.isBlank() || stocCuloare.isBlank() || stocCantitate.isBlank()) {
-            message = "Completeaza toate campurile pentru stoc.";
+        if (stocIdFlorarie.get().isBlank() || stocIdFloare.get().isBlank() ||
+                stocCuloare.get().isBlank() || stocCantitate.get().isBlank()) {
+            message.set("Completeaza toate campurile pentru stoc.");
             return;
         }
 
-        currentStoc = new Stoc();
-        currentStoc.setIdFlorarie(parseInt(stocIdFlorarie));
-        currentStoc.setIdFloare(parseInt(stocIdFloare));
-        currentStoc.setCuloare(stocCuloare);
-        currentStoc.setStoc(parseInt(stocCantitate));
+        Stoc stoc = new Stoc();
+        stoc.setIdFlorarie(parseInt(stocIdFlorarie.get()));
+        stoc.setIdFloare(parseInt(stocIdFloare.get()));
+        stoc.setCuloare(stocCuloare.get());
+        stoc.setStoc(parseInt(stocCantitate.get()));
 
-        stocRepository.addStoc(currentStoc);
+        stocRepository.addStoc(stoc);
         loadStocuri();
         clearStocFields();
         selectedStoc = null;
-        message = "Stoc adaugat cu succes.";
+        message.set("Stoc adaugat cu succes.");
     }
 
     public void updateStoc() {
         if (selectedStoc == null) {
-            message = "Selecteaza un rand de stoc pentru actualizare.";
+            message.set("Selecteaza un rand de stoc pentru actualizare.");
             return;
         }
 
-        selectedStoc.setIdFlorarie(parseInt(stocIdFlorarie));
-        selectedStoc.setIdFloare(parseInt(stocIdFloare));
-        selectedStoc.setCuloare(stocCuloare);
-        selectedStoc.setStoc(parseInt(stocCantitate));
+        selectedStoc.setIdFlorarie(parseInt(stocIdFlorarie.get()));
+        selectedStoc.setIdFloare(parseInt(stocIdFloare.get()));
+        selectedStoc.setCuloare(stocCuloare.get());
+        selectedStoc.setStoc(parseInt(stocCantitate.get()));
 
         stocRepository.updateStoc(selectedStoc);
         loadStocuri();
-        stocId = String.valueOf(selectedStoc.getIdStoc());
-        message = "Stoc actualizat cu succes.";
+        stocId.set(String.valueOf(selectedStoc.getIdStoc()));
+        message.set("Stoc actualizat cu succes.");
     }
 
     public void deleteStoc() {
         if (selectedStoc == null) {
-            message = "Selecteaza un rand de stoc pentru stergere.";
+            message.set("Selecteaza un rand de stoc pentru stergere.");
             return;
         }
 
@@ -490,138 +342,140 @@ public class FlorarieVM {
         loadStocuri();
         clearStocFields();
         selectedStoc = null;
-        message = "Stoc sters cu succes.";
+        message.set("Stoc sters cu succes.");
     }
 
     public void searchFloare() {
-        if (search.isBlank()) {
-            message = "Introdu denumirea florii cautate.";
+        if (search.get().isBlank()) {
+            message.set("Introdu denumirea florii cautate.");
             return;
         }
 
-        Floare floareGasita = floareRepository.searchFloare(search);
+        Floare floareGasita = floareRepository.searchFloare(search.get());
 
-        clearTable(floriTableModel);
-        clearTable(stocuriTableModel);
+        floriPreview.clear();
+        stocuriPreview.clear();
 
         if (floareGasita == null) {
-            clearFloareFields();
-            clearStocFields();
-            selectedFloare = null;
-            selectedStoc = null;
-            message = "Nu a fost gasita nicio floare.";
+            message.set("Nu a fost gasita nicio floare.");
             return;
         }
 
-        floriTableModel.addRow(new Object[]{
-                floareGasita.getIdFloare(),
+        floriPreview.add(List.of(
+                String.valueOf(floareGasita.getIdFloare()),
                 floareGasita.getDenumire(),
-                floareGasita.getImagine()
-        });
+                safe(floareGasita.getImagine())
+        ));
 
-        floareId = String.valueOf(floareGasita.getIdFloare());
-        floareDenumire = floareGasita.getDenumire();
-        floareImagine = floareGasita.getImagine();
+        floareId.set(String.valueOf(floareGasita.getIdFloare()));
+        floareDenumire.set(floareGasita.getDenumire());
+        floareImagine.set(safe(floareGasita.getImagine()));
 
         List<Stoc> variante = stocRepository.getStocFlorari(floareGasita.getIdFloare());
-        fillStocuriTable(variante);
+        fillPreviewStocuri(variante);
 
-        message = "Cautare realizata cu succes.";
+        message.set("Cautare realizata cu succes.");
     }
 
     public void filterFloriCuloare() {
         if (selectedFlorarie == null) {
-            message = "Selecteaza o florarie pentru filtrare.";
+            message.set("Selecteaza o florarie pentru filtrare.");
             return;
         }
 
-        if (filterColor.isBlank()) {
-            message = "Introdu culoarea pentru filtrare.";
+        if (filterColor.get().isBlank()) {
+            message.set("Introdu culoarea pentru filtrare.");
             return;
         }
 
-        List<Stoc> rezultat = stocRepository.getStocDupaFlorarieSiCuloare(selectedFlorarie.getIdFlorarie(), filterColor);
-        fillStocuriTable(rezultat);
-        message = "Filtrare dupa culoare realizata cu succes.";
+        List<Stoc> rezultat = stocRepository.getStocDupaFlorarieSiCuloare(
+                selectedFlorarie.getIdFlorarie(),
+                filterColor.get()
+        );
+
+        fillPreviewStocuri(rezultat);
+        message.set("Filtrare dupa culoare realizata cu succes.");
     }
 
     public void filterFloriDisp() {
         if (selectedFlorarie == null) {
-            message = "Selecteaza o florarie pentru filtrare.";
+            message.set("Selecteaza o florarie pentru filtrare.");
             return;
         }
 
         List<Stoc> rezultat = stocRepository.getStocDisponibilDinFlorarie(selectedFlorarie.getIdFlorarie());
-        fillStocuriTable(rezultat);
-        message = "Filtrare dupa disponibilitate realizata cu succes.";
+        fillPreviewStocuri(rezultat);
+        message.set("Filtrare dupa disponibilitate realizata cu succes.");
     }
 
     public void loadFlorarii() {
-        clearTable(florariiTableModel);
+        florarii.clear();
 
-        List<Florarie> florarii = florarieRepository.getFlorarii();
-        for (Florarie florarie : florarii) {
-            florariiTableModel.addRow(new Object[]{
-                    florarie.getIdFlorarie(),
-                    florarie.getDenumire(),
-                    florarie.getAdresa()
-            });
+        List<Florarie> list = florarieRepository.getFlorarii();
+        for (Florarie florarie : list) {
+            florarii.add(List.of(
+                    String.valueOf(florarie.getIdFlorarie()),
+                    safe(florarie.getDenumire()),
+                    safe(florarie.getAdresa())
+            ));
         }
     }
 
     public void loadFlori() {
-        clearTable(floriTableModel);
+        flori.clear();
 
-        List<Floare> flori = floareRepository.getFloriSortedByDenumire();
-        for (Floare floare : flori) {
-            floriTableModel.addRow(new Object[]{
-                    floare.getIdFloare(),
-                    floare.getDenumire(),
-                    floare.getImagine()
-            });
+        List<Floare> list = floareRepository.getFloriSortedByDenumire();
+        for (Floare floare : list) {
+            flori.add(List.of(
+                    String.valueOf(floare.getIdFloare()),
+                    safe(floare.getDenumire()),
+                    safe(floare.getImagine())
+            ));
         }
     }
 
     public void loadStocuri() {
-        fillStocuriTable(stocRepository.getStocuri());
+        stocuri.clear();
+
+        List<Stoc> list = stocRepository.getStocuri();
+        for (Stoc stoc : list) {
+            stocuri.add(List.of(
+                    String.valueOf(stoc.getIdStoc()),
+                    String.valueOf(stoc.getIdFlorarie()),
+                    String.valueOf(stoc.getIdFloare()),
+                    safe(stoc.getCuloare()),
+                    String.valueOf(stoc.getStoc())
+            ));
+        }
     }
 
-    public List<String> getFlorariiList() {
-        return florarieRepository.getFlorarii()
+    private void fillPreviewStocuri(List<Stoc> list) {
+        stocuriPreview.clear();
+
+        for (Stoc stoc : list) {
+            stocuriPreview.add(List.of(
+                    String.valueOf(stoc.getIdStoc()),
+                    String.valueOf(stoc.getIdFlorarie()),
+                    String.valueOf(stoc.getIdFloare()),
+                    safe(stoc.getCuloare()),
+                    String.valueOf(stoc.getStoc())
+            ));
+        }
+    }
+
+    public void loadFlorariiCombo() {
+        florariiCombo.clear();
+
+        florarieRepository.getFlorarii()
                 .stream()
                 .map(f -> f.getIdFlorarie() + " - " + f.getDenumire())
-                .toList();
-    }
-
-    public void selectFlorarieByIndex(int index) {
-        List<Florarie> list = florarieRepository.getFlorarii();
-        if (index >= 0 && index < list.size()) {
-            selectedFlorarie = list.get(index);
-        }
-    }
-
-    private void fillStocuriTable(List<Stoc> stocuri) {
-        clearTable(stocuriTableModel);
-
-        for (Stoc stoc : stocuri) {
-            stocuriTableModel.addRow(new Object[]{
-                    stoc.getIdStoc(),
-                    stoc.getIdFlorarie(),
-                    stoc.getIdFloare(),
-                    stoc.getCuloare(),
-                    stoc.getStoc()
-            });
-        }
-    }
-
-    private void clearTable(DefaultTableModel model) {
-        model.setRowCount(0);
+                .forEach(florariiCombo::add);
     }
 
     private int parseInt(String value) {
         try {
             return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             return 0;
         }
     }
@@ -630,23 +484,116 @@ public class FlorarieVM {
         return value == null ? "" : value.trim();
     }
 
+    private void updatePreviewImage(String path) {
+        Image image = resolveImage(path);
+        floarePreviewImage.set(image);
+        floarePreviewText.set(image == null ? "Preview imagine" : "");
+    }
+
+    private Image resolveImage(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return null;
+        }
+
+        String cleanPath = path.trim();
+
+        try {
+            File[] options = new File[] {
+                    new File(cleanPath),
+                    new File("images/" + cleanPath),
+                    new File("src/" + cleanPath),
+                    new File("src/images/" + cleanPath)
+            };
+
+            for (File file : options) {
+                if (file.exists()) {
+                    return new Image(file.toURI().toString(), true);
+                }
+            }
+
+            URL resource = getClass().getClassLoader().getResource(cleanPath);
+            if (resource != null) {
+                return new Image(resource.toExternalForm(), true);
+            }
+        } catch (Exception ignored) {
+        }
+
+        return null;
+    }
+
+    public Image getImageForPath(String path) {
+        return resolveImage(path);
+    }
+
     private void clearFlorarieFields() {
-        florarieId = "";
-        florarieDenumire = "";
-        florarieAdresa = "";
+        florarieId.set("");
+        florarieDenumire.set("");
+        florarieAdresa.set("");
     }
 
     private void clearFloareFields() {
-        floareId = "";
-        floareDenumire = "";
-        floareImagine = "";
+        floareId.set("");
+        floareDenumire.set("");
+        floareImagine.set("");
     }
 
     private void clearStocFields() {
-        stocId = "";
-        stocIdFlorarie = "";
-        stocIdFloare = "";
-        stocCuloare = "";
-        stocCantitate = "";
+        stocId.set("");
+        stocIdFlorarie.set("");
+        stocIdFloare.set("");
+        stocCuloare.set("");
+        stocCantitate.set("");
+    }
+
+    public StringProperty messageProperty() { return message; }
+
+    public StringProperty searchProperty() { return search; }
+    public StringProperty filterColorProperty() { return filterColor; }
+
+    public StringProperty florarieIdProperty() { return florarieId; }
+    public StringProperty florarieDenumireProperty() { return florarieDenumire; }
+    public StringProperty florarieAdresaProperty() { return florarieAdresa; }
+
+    public StringProperty floareIdProperty() { return floareId; }
+    public StringProperty floareDenumireProperty() { return floareDenumire; }
+    public StringProperty floareImagineProperty() { return floareImagine; }
+
+    public StringProperty stocIdProperty() { return stocId; }
+    public StringProperty stocIdFlorarieProperty() { return stocIdFlorarie; }
+    public StringProperty stocIdFloareProperty() { return stocIdFloare; }
+    public StringProperty stocCuloareProperty() { return stocCuloare; }
+    public StringProperty stocCantitateProperty() { return stocCantitate; }
+
+    public StringProperty selectedFlorarieComboProperty() { return selectedFlorarieCombo; }
+
+    public ObservableList<List<String>> getFlorarii() { return florarii; }
+    public ObservableList<List<String>> getFlori() { return flori; }
+    public ObservableList<List<String>> getStocuri() { return stocuri; }
+    public ObservableList<List<String>> getFloriPreview() { return floriPreview; }
+    public ObservableList<List<String>> getStocuriPreview() { return stocuriPreview; }
+    public ObservableList<String> getFlorariiCombo() { return florariiCombo; }
+
+    public RelayCommand getAddFlorarieCommand() { return addFlorarieCommand; }
+    public RelayCommand getUpdateFlorarieCommand() { return updateFlorarieCommand; }
+    public RelayCommand getDeleteFlorarieCommand() { return deleteFlorarieCommand; }
+
+    public RelayCommand getAddFloareCommand() { return addFloareCommand; }
+    public RelayCommand getUpdateFloareCommand() { return updateFloareCommand; }
+    public RelayCommand getDeleteFloareCommand() { return deleteFloareCommand; }
+
+    public RelayCommand getAddStocCommand() { return addStocCommand; }
+    public RelayCommand getUpdateStocCommand() { return updateStocCommand; }
+    public RelayCommand getDeleteStocCommand() { return deleteStocCommand; }
+
+    public RelayCommand getSearchFloareCommand() { return searchFloareCommand; }
+    public RelayCommand getFilterColorCommand() { return filterColorCommand; }
+    public RelayCommand getFilterDispCommand() { return filterDispCommand; }
+    public RelayCommand getRefreshCommand() { return refreshCommand; }
+    public ObjectProperty<Image> floarePreviewImageProperty() {
+        return floarePreviewImage;
+    }
+
+    public StringProperty floarePreviewTextProperty() {
+        return floarePreviewText;
     }
 }

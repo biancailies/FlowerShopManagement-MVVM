@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="View.FlorarieView"
+            prefWidth="1360"
+            prefHeight="900"
+            style="-fx-background-color: #f4f7fb;">
+
+    <top>
+        <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #f4f7fb;">
+            <padding>
+                <Insets top="14" right="14" bottom="0" left="14"/>
+            </padding>
+
+            <Label text="Flower Shop Management"
+                   style="-fx-font-size: 28px;
+                          -fx-font-weight: bold;
+                          -fx-text-fill: #243447;" />
+
+            <Label text="MVVM - Florarii, flori, stoc, cautare si filtrare"
+                   style="-fx-font-size: 14px;
+                          -fx-text-fill: #66707a;" />
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE"
+                 style="-fx-background-color: transparent; -fx-padding: 12;">
+
+            <!-- FLORARII -->
+            <Tab text="Florarii">
+                <BorderPane style="-fx-background-color: #f4f7fb;">
+                    <left>
+                        <VBox spacing="12" prefWidth="390" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+
+                            <TitledPane text="Date florarie" collapsible="false">
+                                <content>
+                                    <GridPane hgap="10" vgap="10" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Label text="ID Florarie" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtIdFlorarie" editable="false"
+                                                   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                                   style="-fx-background-color: #f2f4f7;" />
+
+                                        <Label text="Denumire" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtDenumireFlorarie"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                        <Label text="Adresa" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtAdresaFlorarie"
+                                                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                    </GridPane>
+                                </content>
+                            </TitledPane>
+
+                            <TitledPane text="Actiuni florarie" collapsible="false">
+                                <content>
+                                    <HBox spacing="10" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Button text="Adauga" onAction="#onAddFlorarie"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+                                        <Button text="Actualizeaza" onAction="#onUpdateFlorarie"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+                                        <Button text="Sterge" onAction="#onDeleteFlorarie"
+                                                style="-fx-background-color: #f8e0e0; -fx-font-weight: bold;"/>
+                                    </HBox>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </left>
+
+                    <center>
+                        <VBox spacing="12" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="0"/></padding>
+
+                            <TitledPane text="Lista florarii" collapsible="false" VBox.vgrow="ALWAYS">
+                                <content>
+                                    <TableView fx:id="tableFlorarii" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colFlorarieId" text="ID" prefWidth="80"/>
+                                            <TableColumn fx:id="colFlorarieDenumire" text="Denumire" prefWidth="220"/>
+                                            <TableColumn fx:id="colFlorarieAdresa" text="Adresa" prefWidth="320"/>
+                                        </columns>
+                                    </TableView>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </center>
+                </BorderPane>
+            </Tab>
+
+            <!-- FLORI -->
+            <Tab text="Flori">
+                <BorderPane style="-fx-background-color: #f4f7fb;">
+                    <left>
+                        <VBox spacing="12" prefWidth="390" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+
+                            <TitledPane text="Date floare" collapsible="false">
+                                <content>
+                                    <GridPane hgap="10" vgap="10" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Label text="ID Floare" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtIdFloare" editable="false"
+                                                   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                                   style="-fx-background-color: #f2f4f7;" />
+
+                                        <Label text="Denumire" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtDenumireFloare"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                        <Label text="Imagine" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <HBox spacing="8" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                                            <TextField fx:id="txtImagineFloare" HBox.hgrow="ALWAYS"/>
+                                            <Button text="Alege imagine" onAction="#onBrowseImage"
+                                                    style="-fx-background-color: #f0f2f5; -fx-font-weight: bold;"/>
+                                        </HBox>
+                                    </GridPane>
+                                </content>
+                            </TitledPane>
+
+                            <TitledPane text="Actiuni floare" collapsible="false">
+                                <content>
+                                    <HBox spacing="10" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Button text="Adauga" onAction="#onAddFloare"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+                                        <Button text="Actualizeaza" onAction="#onUpdateFloare"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+                                        <Button text="Sterge" onAction="#onDeleteFloare"
+                                                style="-fx-background-color: #f8e0e0; -fx-font-weight: bold;"/>
+                                    </HBox>
+                                </content>
+                            </TitledPane>
+
+                            <TitledPane text="Preview imagine" collapsible="false">
+                                <content>
+                                    <StackPane style="-fx-background-color: white; -fx-padding: 12;">
+                                        <ImageView fx:id="imgPreview"
+                                                   fitWidth="220"
+                                                   fitHeight="170"
+                                                   preserveRatio="true"/>
+                                    </StackPane>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </left>
+
+                    <center>
+                        <VBox spacing="12" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="0"/></padding>
+
+                            <TitledPane text="Lista flori" collapsible="false" VBox.vgrow="ALWAYS">
+                                <content>
+                                    <TableView fx:id="tableFlori" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colFloareId" text="ID" prefWidth="80"/>
+                                            <TableColumn fx:id="colFloareDenumire" text="Denumire" prefWidth="220"/>
+                                            <TableColumn fx:id="colFloareImagine" text="Imagine" prefWidth="180"/>
+                                        </columns>
+                                    </TableView>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </center>
+                </BorderPane>
+            </Tab>
+
+            <!-- STOC -->
+            <Tab text="Stoc">
+                <BorderPane style="-fx-background-color: #f4f7fb;">
+                    <left>
+                        <VBox spacing="12" prefWidth="390" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+
+                            <TitledPane text="Date stoc" collapsible="false">
+                                <content>
+                                    <GridPane hgap="10" vgap="10" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Label text="ID Stoc" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtIdStoc" editable="false"
+                                                   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                                   style="-fx-background-color: #f2f4f7;" />
+
+                                        <Label text="ID Florarie" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtIdFlorarieStoc"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                        <Label text="ID Floare" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtIdFloareStoc"
+                                                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                                        <Label text="Culoare" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtCuloareStoc"
+                                                   GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                                        <Label text="Cantitate" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtCantitateStoc"
+                                                   GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                    </GridPane>
+                                </content>
+                            </TitledPane>
+
+                            <TitledPane text="Actiuni stoc" collapsible="false">
+                                <content>
+                                    <HBox spacing="10" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Button text="Adauga" onAction="#onAddStoc"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+                                        <Button text="Actualizeaza" onAction="#onUpdateStoc"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+                                        <Button text="Sterge" onAction="#onDeleteStoc"
+                                                style="-fx-background-color: #f8e0e0; -fx-font-weight: bold;"/>
+                                    </HBox>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </left>
+
+                    <center>
+                        <VBox spacing="12" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="0"/></padding>
+
+                            <TitledPane text="Lista stocuri" collapsible="false" VBox.vgrow="ALWAYS">
+                                <content>
+                                    <TableView fx:id="tableStocuri" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colStocId" text="ID Stoc" prefWidth="90"/>
+                                            <TableColumn fx:id="colStocIdFlorarie" text="ID Florarie" prefWidth="110"/>
+                                            <TableColumn fx:id="colStocIdFloare" text="ID Floare" prefWidth="100"/>
+                                            <TableColumn fx:id="colStocCuloare" text="Culoare" prefWidth="150"/>
+                                            <TableColumn fx:id="colStocCantitate" text="Stoc" prefWidth="100"/>
+                                        </columns>
+                                    </TableView>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </center>
+                </BorderPane>
+            </Tab>
+
+            <!-- CAUTARE / FILTRARE -->
+            <Tab text="Cautare / Filtrare">
+                <BorderPane style="-fx-background-color: #f4f7fb;">
+                    <left>
+                        <VBox spacing="12" prefWidth="390" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+
+                            <TitledPane text="Cautare si filtrare" collapsible="false">
+                                <content>
+                                    <GridPane hgap="10" vgap="10" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Label text="Florarie" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <ComboBox fx:id="comboFlorarii"
+                                                  GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                                  prefWidth="220"/>
+
+                                        <Label text="Denumire floare" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtSearchFloare"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                        <Button text="Cauta"
+                                                onAction="#onSearchFloare"
+                                                GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2"
+                                                maxWidth="Infinity"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+
+                                        <Label text="Culoare" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="txtFilterColor"
+                                                   GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                                        <Button text="Filtreaza culoare"
+                                                onAction="#onFilterColor"
+                                                GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2"
+                                                maxWidth="Infinity"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+
+                                        <Button text="Doar disponibile"
+                                                onAction="#onFilterDisponibile"
+                                                GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2"
+                                                maxWidth="Infinity"
+                                                style="-fx-background-color: #e0eff8; -fx-font-weight: bold;"/>
+
+                                        <Button text="Refresh"
+                                                onAction="#onRefresh"
+                                                GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="2"
+                                                maxWidth="Infinity"
+                                                style="-fx-background-color: #f0f2f5; -fx-font-weight: bold;"/>
+                                    </GridPane>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </left>
+
+                    <center>
+                        <VBox spacing="12" style="-fx-background-color: transparent;">
+                            <padding><Insets top="14" right="14" bottom="14" left="0"/></padding>
+
+                            <TitledPane text="Rezultate" collapsible="false" VBox.vgrow="ALWAYS">
+                                <content>
+                                    <VBox spacing="12" style="-fx-background-color: white; -fx-padding: 12;">
+                                        <Label text="Tabel flori" style="-fx-font-weight: bold;"/>
+
+                                        <TableView fx:id="tableFloriPreview" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="colPrevFloareId" text="ID" prefWidth="80"/>
+                                                <TableColumn fx:id="colPrevFloareDenumire" text="Denumire" prefWidth="220"/>
+                                                <TableColumn fx:id="colPrevFloareImagine" text="Imagine" prefWidth="180"/>
+                                            </columns>
+                                        </TableView>
+
+                                        <Label text="Tabel stocuri" style="-fx-font-weight: bold;"/>
+
+                                        <TableView fx:id="tableStocuriPreview" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="colPrevStocId" text="ID Stoc" prefWidth="90"/>
+                                                <TableColumn fx:id="colPrevStocIdFlorarie" text="ID Florarie" prefWidth="110"/>
+                                                <TableColumn fx:id="colPrevStocIdFloare" text="ID Floare" prefWidth="100"/>
+                                                <TableColumn fx:id="colPrevStocCuloare" text="Culoare" prefWidth="150"/>
+                                                <TableColumn fx:id="colPrevStocCantitate" text="Stoc" prefWidth="100"/>
+                                            </columns>
+                                        </TableView>
+                                    </VBox>
+                                </content>
+                            </TitledPane>
+                        </VBox>
+                    </center>
+                </BorderPane>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+    <bottom>
+        <HBox style="-fx-background-color: white; -fx-padding: 10 12 12 12; -fx-border-color: #d9dfe6;">
+            <Label fx:id="lblMessage"
+                   style="-fx-font-size: 14px;
+                          -fx-font-weight: bold;
+                          -fx-text-fill: #274e72;" />
+        </HBox>
+    </bottom>
+</BorderPane>
